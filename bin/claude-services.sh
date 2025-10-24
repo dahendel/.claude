@@ -3,7 +3,7 @@
 # Manages Docker-based vector database and supporting services
 
 CLAUDE_DIR="$HOME/.claude"
-COMPOSE_FILE="$CLAUDE_DIR/docker-compose.yml"
+COMPOSE_FILE="$CLAUDE_DIR/config/docker-compose.yml"
 
 # Colors for output
 RED='\033[0;31m'

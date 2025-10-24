@@ -13,6 +13,9 @@ case "${1:-help}" in
     start|stop|restart|logs|test|services)
         "$CLAUDE_ROOT/bin/claude-services.sh" "$@"
         ;;
+    autostart)
+        bash "$CLAUDE_ROOT/bin/setup-autostart.sh" "${@:2}"
+        ;;
     init-db)
         python3 "$CLAUDE_ROOT/bin/init-vectordb.py"
         ;;
@@ -34,18 +37,19 @@ Commands:
   restore                 Restore from backup
   usage                   Show usage statistics
   clean                   Cleanup old backups
-  
+
   start                   Start Docker services
   stop                    Stop Docker services
   restart                 Restart Docker services
   logs                    View service logs
   test                    Test connectivity
   services                Service management
-  
+
+  autostart [cmd]         Manage auto-start (install|remove|status)
   init-db                 Initialize vector database
   package [file]          Package for transfer
   setup                   Run setup script
-  
+
   help                    Show this help
 
 Environment:

@@ -1,0 +1,17 @@
+[Unit]
+Description=Claude Vector Database (Chroma)
+After=docker.service
+Requires=docker.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStartPre=/usr/bin/docker info
+ExecStart=/home/dahendel/.claude/bin/claude-services.sh start
+ExecStop=/home/dahendel/.claude/bin/claude-services.sh stop
+TimeoutStartSec=0
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=default.target

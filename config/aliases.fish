@@ -6,20 +6,20 @@
 set -gx PATH ~/.claude $PATH
 
 # === Quick Aliases (using wrapper) ===
-alias claude-health='~/.claude/claude health'
-alias claude-status='~/.claude/claude status'
-alias claude-backup='~/.claude/claude backup'
-alias claude-restore='~/.claude/claude restore'
-alias claude-usage='~/.claude/claude usage'
-alias claude-clean='~/.claude/claude clean'
-alias claude-start='~/.claude/claude start'
-alias claude-stop='~/.claude/claude stop'
-alias claude-restart='~/.claude/claude restart'
-alias claude-logs='~/.claude/claude logs'
-alias claude-test='~/.claude/claude test'
-alias claude-init-db='~/.claude/claude init-db'
-alias claude-package='~/.claude/claude package'
-alias claude-setup='~/.claude/claude setup'
+alias claude-health='~/.claude/claude-env health'
+alias claude-status='~/.claude/claude-env status'
+alias claude-backup='~/.claude/claude-env backup'
+alias claude-restore='~/.claude/claude-env restore'
+alias claude-usage='~/.claude/claude-env usage'
+alias claude-clean='~/.claude/claude-env clean'
+alias claude-start='~/.claude/claude-env start'
+alias claude-stop='~/.claude/claude-env stop'
+alias claude-restart='~/.claude/claude-env restart'
+alias claude-logs='~/.claude/claude-env logs'
+alias claude-test='~/.claude/claude-env test'
+alias claude-init-db='~/.claude/claude-env init-db'
+alias claude-package='~/.claude/claude-env package'
+alias claude-setup='~/.claude/claude-env setup'
 
 # === Direct Script Access (for advanced use) ===
 alias claude-services='~/.claude/bin/claude-services.sh'
@@ -55,9 +55,9 @@ function claude-init-project
 end
 
 function claude-health
-    ~/.claude/claude health
+    ~/.claude/claude-env health
 end
 
 # Show load message
 echo "✓ Claude Code aliases loaded (Fish shell)"
-echo "  Run 'claude help' for available commands"
+echo "  Run 'claude-env help' for available commands"
