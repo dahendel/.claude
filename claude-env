@@ -22,6 +22,9 @@ case "${1:-help}" in
     sync)
         bash "$CLAUDE_ROOT/bin/git-auto-sync.sh"
         ;;
+    skill-create)
+        bash "$CLAUDE_ROOT/bin/skill-create.sh" "${@:2}"
+        ;;
     init-db)
         python3 "$CLAUDE_ROOT/bin/init-vectordb.py"
         ;;
@@ -54,6 +57,7 @@ Commands:
   autostart [cmd]         Manage auto-start (install|remove|status)
   git-sync [cmd]          Manage git auto-sync (install|remove|test|status)
   sync                    Run git sync manually
+  skill-create [args]     Create Claude skills from docs (create|list|install)
   init-db                 Initialize vector database
   package [file]          Package for transfer
   setup                   Run setup script
