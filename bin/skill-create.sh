@@ -109,18 +109,18 @@ EOF
 create_skill() {
     local name="$1"
     local url="$2"
-    local interactive="${3:-false}"
+    local use_browser="${3:-false}"
 
     print_header
 
     if [ -z "$name" ] || [ -z "$url" ]; then
         echo -e "${RED}✗ Missing required arguments${NC}"
         echo ""
-        echo "Usage: skill-create <name> <url>"
+        echo "Usage: skill-create <name> <url> [--use-browser]"
         echo ""
         echo "Example:"
         echo "  skill-create react https://react.dev/"
-        echo "  skill-create tailwind https://tailwindcss.com/docs"
+        echo "  skill-create golang https://go.dev/doc/effective_go --use-browser"
         exit 1
     fi
 
@@ -128,6 +128,11 @@ create_skill() {
 
     echo -e "${BLUE}Creating skill: ${name}${NC}"
     echo -e "${BLUE}Documentation URL: ${url}${NC}"
+    if [ "$use_browser" = "true" ]; then
+        echo -e "${BLUE}Mode: Browser (JavaScript support)${NC}"
+    else
+        echo -e "${BLUE}Mode: Static (Fast)${NC}"
+    fi
     echo ""
 
     # Create config
@@ -144,7 +149,12 @@ create_skill() {
     echo -e "${YELLOW}This may take a while depending on the site size...${NC}"
     echo ""
 
-    if python3 "$DOC_SCRAPER" --config "$config_file"; then
+    local scraper_args="--config $config_file"
+    if [ "$use_browser" = "true" ]; then
+        scraper_args="$scraper_args --use-browser"
+    fi
+
+    if python3 "$DOC_SCRAPER" $scraper_args; then
         echo ""
         echo -e "${GREEN}✓ Skill created successfully!${NC}"
         echo ""
@@ -248,7 +258,12 @@ install_skill() {
 
 case "${1:-help}" in
     create)
-        create_skill "$2" "$3"
+        # Check if --use-browser flag is present
+        use_browser="false"
+        if [ "$4" = "--use-browser" ] || [ "$3" = "--use-browser" ]; then
+            use_browser="true"
+        fi
+        create_skill "$2" "$3" "$use_browser"
         ;;
 
     list)
@@ -264,13 +279,23 @@ case "${1:-help}" in
         echo "Create Claude skills from documentation URLs"
         echo ""
         echo "Usage:"
-        echo "  skill-create create <name> <url>    Create new skill"
-        echo "  skill-create list                   List available skills"
-        echo "  skill-create install <name>         Install skill to Claude"
-        echo "  skill-create help                   Show this help"
+        echo "  skill-create create <name> <url> [--use-browser]    Create new skill"
+        echo "  skill-create list                                   List available skills"
+        echo "  skill-create install <name>                         Install skill to Claude"
+        echo "  skill-create help                                   Show this help"
+        echo ""
+        echo "Options:"
+        echo "  --use-browser    Enable browser automation for JavaScript-heavy sites"
+        echo "                   (Requires: pip install playwright && playwright install chromium)"
         echo ""
         echo "Examples:"
+        echo "  # Static site (fast)"
         echo "  skill-create create react https://react.dev/"
+        echo ""
+        echo "  # JavaScript-heavy site (slower but handles dynamic content)"
+        echo "  skill-create create golang https://go.dev/doc/effective_go --use-browser"
+        echo ""
+        echo "  # More examples"
         echo "  skill-create create tailwind https://tailwindcss.com/docs"
         echo "  skill-create create vue https://vuejs.org/guide/"
         echo ""
@@ -282,7 +307,11 @@ case "${1:-help}" in
     *)
         # Default: create skill with name and url
         if [ -n "$1" ] && [ -n "$2" ]; then
-            create_skill "$1" "$2"
+            use_browser="false"
+            if [ "$3" = "--use-browser" ]; then
+                use_browser="true"
+            fi
+            create_skill "$1" "$2" "$use_browser"
         else
             echo -e "${RED}✗ Invalid command${NC}"
             echo "Run 'skill-create help' for usage"
