@@ -22,6 +22,15 @@ from urllib.parse import urljoin, urlparse
 from bs4 import BeautifulSoup
 from collections import deque, defaultdict
 
+# Optional: Playwright for JavaScript-heavy sites
+try:
+    from playwright.sync_api import sync_playwright, TimeoutError as PlaywrightTimeout
+    PLAYWRIGHT_AVAILABLE = True
+except ImportError:
+    PLAYWRIGHT_AVAILABLE = False
+    sync_playwright = None
+    PlaywrightTimeout = Exception
+
 
 class DocToSkillConverter:
     def __init__(self, config, dry_run=False, resume=False):
@@ -41,6 +50,12 @@ class DocToSkillConverter:
         self.checkpoint_enabled = checkpoint_config.get('enabled', False)
         self.checkpoint_interval = checkpoint_config.get('interval', 1000)
 
+        # JavaScript rendering config
+        self.use_browser = config.get('use_browser', False)
+        self.playwright = None
+        self.browser = None
+        self.page_context = None
+
         # State
         self.visited_urls = set()
         # Support multiple starting URLs
@@ -56,10 +71,55 @@ class DocToSkillConverter:
             os.makedirs(f"{self.skill_dir}/scripts", exist_ok=True)
             os.makedirs(f"{self.skill_dir}/assets", exist_ok=True)
 
+        # Initialize browser if needed
+        if self.use_browser and not dry_run:
+            self._init_browser()
+
         # Load checkpoint if resuming
         if resume and not dry_run:
             self.load_checkpoint()
-    
+
+    def _init_browser(self):
+        """Initialize Playwright browser for JavaScript-heavy sites"""
+        if not PLAYWRIGHT_AVAILABLE:
+            print("⚠️  Playwright not installed. Install with: pip install playwright && playwright install chromium")
+            print("   Falling back to requests (JavaScript content may not load)")
+            self.use_browser = False
+            return
+
+        try:
+            self.playwright = sync_playwright().start()
+            self.browser = self.playwright.chromium.launch(headless=True)
+            self.page_context = self.browser.new_page()
+            print("✅ Browser initialized for JavaScript rendering")
+        except Exception as e:
+            print(f"⚠️  Failed to initialize browser: {e}")
+            print("   Falling back to requests")
+            self.use_browser = False
+            if self.playwright:
+                try:
+                    self.playwright.stop()
+                except:
+                    pass
+
+    def _cleanup_browser(self):
+        """Clean up browser resources"""
+        if self.page_context:
+            try:
+                self.page_context.close()
+            except:
+                pass
+        if self.browser:
+            try:
+                self.browser.close()
+            except:
+                pass
+        if self.playwright:
+            try:
+                self.playwright.stop()
+            except:
+                pass
+
     def is_valid_url(self, url):
         """Check if URL should be scraped"""
         if not url.startswith(self.base_url):
@@ -272,30 +332,62 @@ class DocToSkillConverter:
             json.dump(page, f, indent=2, ensure_ascii=False)
     
     def scrape_page(self, url):
-        """Scrape a single page"""
+        """Scrape a single page (with optional JavaScript rendering)"""
         try:
             print(f"  {url}")
-            
-            headers = {'User-Agent': 'Mozilla/5.0 (Documentation Scraper)'}
-            response = requests.get(url, headers=headers, timeout=30)
-            response.raise_for_status()
-            
-            soup = BeautifulSoup(response.content, 'html.parser')
+
+            if self.use_browser and self.page_context:
+                # Use Playwright for JavaScript-heavy sites
+                html = self._fetch_with_browser(url)
+            else:
+                # Use requests for static sites (faster)
+                html = self._fetch_with_requests(url)
+
+            if not html:
+                print(f"  ⚠️  No content retrieved")
+                return
+
+            soup = BeautifulSoup(html, 'html.parser')
             page = self.extract_content(soup, url)
-            
+
             self.save_page(page)
             self.pages.append(page)
-            
+
             # Add new URLs
             for link in page['links']:
                 if link not in self.visited_urls and link not in self.pending_urls:
                     self.pending_urls.append(link)
-            
+
             # Rate limiting
             time.sleep(self.config.get('rate_limit', 0.5))
-            
+
         except Exception as e:
             print(f"  ✗ Error: {e}")
+
+    def _fetch_with_requests(self, url):
+        """Fetch page content with requests (fast, no JavaScript)"""
+        headers = {'User-Agent': 'Mozilla/5.0 (Documentation Scraper)'}
+        response = requests.get(url, headers=headers, timeout=30)
+        response.raise_for_status()
+        return response.content
+
+    def _fetch_with_browser(self, url):
+        """Fetch page content with Playwright (supports JavaScript)"""
+        try:
+            self.page_context.goto(url, wait_until='networkidle', timeout=30000)
+            # Wait a bit for any dynamic content
+            self.page_context.wait_for_timeout(1000)
+            return self.page_context.content()
+        except PlaywrightTimeout:
+            print(f"  ⚠️  Timeout waiting for page load")
+            # Try to get content anyway
+            try:
+                return self.page_context.content()
+            except:
+                return None
+        except Exception as e:
+            print(f"  ⚠️  Browser error: {e}")
+            return None
     
     def scrape_all(self):
         """Scrape all pages"""
@@ -354,6 +446,10 @@ class DocToSkillConverter:
 
             if len(self.visited_urls) % 10 == 0:
                 print(f"  [{len(self.visited_urls)} pages]")
+
+        # Cleanup browser if used
+        if self.use_browser:
+            self._cleanup_browser()
 
         if self.dry_run:
             print(f"\n✅ Dry run complete: would scrape ~{len(self.visited_urls)} pages")
@@ -916,6 +1012,8 @@ def main():
                        help='Resume from last checkpoint (for interrupted scrapes)')
     parser.add_argument('--fresh', action='store_true',
                        help='Clear checkpoint and start fresh')
+    parser.add_argument('--use-browser', action='store_true',
+                       help='Use browser automation for JavaScript-heavy sites (requires: pip install playwright && playwright install chromium)')
 
     args = parser.parse_args()
     
@@ -938,6 +1036,10 @@ def main():
             'rate_limit': 0.5,
             'max_pages': 500
         }
+
+    # Override use_browser from command line if specified
+    if args.use_browser:
+        config['use_browser'] = True
     
     # Dry run mode - preview only
     if args.dry_run:
