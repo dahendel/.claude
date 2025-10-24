@@ -16,6 +16,12 @@ case "${1:-help}" in
     autostart)
         bash "$CLAUDE_ROOT/bin/setup-autostart.sh" "${@:2}"
         ;;
+    git-sync)
+        bash "$CLAUDE_ROOT/bin/setup-git-sync.sh" "${@:2}"
+        ;;
+    sync)
+        bash "$CLAUDE_ROOT/bin/git-auto-sync.sh"
+        ;;
     init-db)
         python3 "$CLAUDE_ROOT/bin/init-vectordb.py"
         ;;
@@ -46,6 +52,8 @@ Commands:
   services                Service management
 
   autostart [cmd]         Manage auto-start (install|remove|status)
+  git-sync [cmd]          Manage git auto-sync (install|remove|test|status)
+  sync                    Run git sync manually
   init-db                 Initialize vector database
   package [file]          Package for transfer
   setup                   Run setup script

@@ -351,6 +351,37 @@ if command_exists docker && docker info >/dev/null 2>&1; then
     fi
 fi
 
+# Optional: Setup Git Auto-sync
+echo ""
+echo -e "${BLUE}═══════════════════════════════════════════════════════════${NC}"
+echo -e "${BLUE}Git Auto-sync (Optional)${NC}"
+echo -e "${BLUE}═══════════════════════════════════════════════════════════${NC}"
+echo ""
+echo "Git auto-sync will automatically commit and push your changes"
+echo "to GitHub every 4 hours. This keeps your machines in sync."
+echo ""
+
+if [ -d "$CLAUDE_DIR/.git" ] && git -C "$CLAUDE_DIR" remote get-url origin >/dev/null 2>&1; then
+    if prompt_yes_no "Setup git auto-sync?"; then
+        echo ""
+        echo -e "${BLUE}Setting up git auto-sync...${NC}"
+        if bash "$CLAUDE_DIR/bin/setup-git-sync.sh" install; then
+            echo -e "${GREEN}✓ Git auto-sync configured${NC}"
+        else
+            echo -e "${YELLOW}⚠ Git auto-sync setup failed (you can set it up later)${NC}"
+        fi
+    else
+        echo -e "${YELLOW}Skipped. You can enable it later with: claude-env git-sync install${NC}"
+    fi
+else
+    echo -e "${YELLOW}⚠ Git repository not initialized or no remote configured${NC}"
+    echo "  To set up git sync later:"
+    echo "  1. Initialize git: cd ~/.claude && git init"
+    echo "  2. Add remote: git remote add origin git@github.com:USER/.claude.git"
+    echo "  3. Push: git push -u origin main"
+    echo "  4. Enable sync: claude-env git-sync install"
+fi
+
 # Summary
 echo ""
 echo -e "${BLUE}╔════════════════════════════════════════════════════════════╗${NC}"
