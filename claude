@@ -1,0 +1,71 @@
+#!/usr/bin/env bash
+# Wrapper script for backward compatibility and clean CLI
+
+CLAUDE_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+case "${1:-help}" in
+    health|status)
+        python3 "$CLAUDE_ROOT/bin/monitor.py"
+        ;;
+    backup|restore|usage|clean)
+        "$CLAUDE_ROOT/bin/manage-context.sh" "$@"
+        ;;
+    start|stop|restart|logs|test|services)
+        "$CLAUDE_ROOT/bin/claude-services.sh" "$@"
+        ;;
+    init-db)
+        python3 "$CLAUDE_ROOT/bin/init-vectordb.py"
+        ;;
+    package)
+        "$CLAUDE_ROOT/bin/package-for-transfer.sh" "${@:2}"
+        ;;
+    setup)
+        bash "$CLAUDE_ROOT/bin/setup-claude-env.sh"
+        ;;
+    help|--help|-h)
+        cat << 'HELP'
+Claude Environment CLI
+
+Usage: claude <command> [options]
+
+Commands:
+  health, status          Check environment health
+  backup [message]        Create backup
+  restore                 Restore from backup
+  usage                   Show usage statistics
+  clean                   Cleanup old backups
+  
+  start                   Start Docker services
+  stop                    Stop Docker services
+  restart                 Restart Docker services
+  logs                    View service logs
+  test                    Test connectivity
+  services                Service management
+  
+  init-db                 Initialize vector database
+  package [file]          Package for transfer
+  setup                   Run setup script
+  
+  help                    Show this help
+
+Environment:
+  ~/.claude/              Claude environment root
+  ~/.claude/bin/          Executable scripts
+  ~/.claude/config/       Configuration files
+  ~/.claude/docs/         Documentation
+  ~/.claude/data/         Runtime data (gitignored)
+
+Documentation:
+  claude docs             Open documentation index
+  
+HELP
+        ;;
+    docs)
+        cat "$CLAUDE_ROOT/docs/INDEX.md"
+        ;;
+    *)
+        echo "Unknown command: $1"
+        echo "Run 'claude help' for usage information"
+        exit 1
+        ;;
+esac

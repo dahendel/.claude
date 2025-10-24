@@ -3,8 +3,7 @@
 # Exclude personal data and runtime files
 
 # Personal data - DO NOT SYNC
-chroma-data/
-backups/
+data/
 *.tar.gz
 *.backup
 *.bak
@@ -46,6 +45,9 @@ shell-snapshots/
 skills/
 statsig/
 todos/
+session-env/
+ollama-data/
+qdrant-data/
 
 # MCP server configs (may contain tokens)
 claude_desktop_config.template.json

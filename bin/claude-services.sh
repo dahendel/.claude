@@ -303,7 +303,7 @@ clean_data() {
     echo "  - Vector databases (Chroma/Qdrant)"
     echo "  - Ollama models"
     echo ""
-    echo "Backups in ~/.claude/backups will NOT be affected."
+    echo "Backups in ~/.claude/data/backups will NOT be affected."
     echo ""
     echo -n "Are you sure? Type 'yes' to confirm: "
     read confirm

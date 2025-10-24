@@ -1,25 +1,25 @@
 #!/bin/bash
 # Claude Code Aliases and Helper Functions
 # Add to your ~/.bashrc or ~/.zshrc:
-#   source ~/.claude/aliases.sh
+#   source ~/.claude/bin/aliases.sh
 
 # === Context Management Aliases ===
-alias claude-status='python3 ~/.claude/monitor.py'
-alias claude-backup='~/.claude/manage-context.sh backup'
-alias claude-restore='~/.claude/manage-context.sh restore'
-alias claude-usage='~/.claude/manage-context.sh usage'
-alias claude-clean='~/.claude/manage-context.sh clean'
+alias claude-status='python3 ~/.claude/bin/monitor.py'
+alias claude-backup='~/.claude/bin/manage-context.sh backup'
+alias claude-restore='~/.claude/bin/manage-context.sh restore'
+alias claude-usage='~/.claude/bin/manage-context.sh usage'
+alias claude-clean='~/.claude/bin/manage-context.sh clean'
 
 # === Docker Services Aliases ===
-alias claude-services='~/.claude/claude-services.sh'
-alias claude-start='~/.claude/claude-services.sh start'
-alias claude-stop='~/.claude/claude-services.sh stop'
-alias claude-restart='~/.claude/claude-services.sh restart'
-alias claude-logs='~/.claude/claude-services.sh logs'
-alias claude-test='~/.claude/claude-services.sh test'
+alias claude-services='~/.claude/bin/claude-services.sh'
+alias claude-start='~/.claude/bin/claude-services.sh start'
+alias claude-stop='~/.claude/bin/claude-services.sh stop'
+alias claude-restart='~/.claude/bin/claude-services.sh restart'
+alias claude-logs='~/.claude/bin/claude-services.sh logs'
+alias claude-test='~/.claude/bin/claude-services.sh test'
 
 # === Vector DB Aliases ===
-alias claude-init-db='python3 ~/.claude/init-vectordb.py'
+alias claude-init-db='python3 ~/.claude/bin/init-vectordb.py'
 
 # === Quick Navigation ===
 alias cdclaude='cd ~/.claude'
@@ -185,7 +185,7 @@ claude-store() {
 claude-backup-quick() {
     local reason="${1:-manual backup}"
     echo "Creating quick backup: $reason"
-    ~/.claude/manage-context.sh backup
+    ~/.claude/bin/manage-context.sh backup
 }
 
 # Show most recent session summary (if history exists)
