@@ -1,0 +1,59 @@
+# .claude/.gitignore
+# Keep configuration and scripts in Git
+# Exclude personal data and runtime files
+
+# Personal data - DO NOT SYNC
+chroma-data/
+backups/
+*.tar.gz
+*.backup
+*.bak
+
+# SQLite databases
+*.sqlite3
+*.sqlite3-shm
+*.sqlite3-wal
+*.db
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+*.tmp
+*.temp
+.DS_Store
+*~
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Claude Desktop internal files - DO NOT SYNC
+debug/
+file-history/
+commands/
+agents/
+.credentials.json
+local/
+history.jsonl
+plugins/
+projects/
+settings.json
+shell-snapshots/
+skills/
+statsig/
+todos/
+
+# MCP server configs (may contain tokens)
+claude_desktop_config.template.json
+claude_desktop_config_docker.json
+
+# Local machine-specific configs
+CLAUDE.local.md
+
+# Environment-specific
+.env
+.env.local
