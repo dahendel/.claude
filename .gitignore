@@ -8,6 +8,11 @@ data/
 *.backup
 *.bak
 
+# Skill creation output and venv
+skill-output/
+skill-configs/
+venv-skill-create/
+
 # SQLite databases
 *.sqlite3
 *.sqlite3-shm

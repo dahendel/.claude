@@ -1,16 +1,17 @@
 #!/bin/bash
 # Claude Skill Creator
-# Wrapper for Skill_Seekers doc_scraper.py
+# Embedded documentation scraper for creating Claude skills
 # Creates Claude skills from documentation URLs
 
 set -e
 
-SKILL_SEEKERS_DIR="$HOME/Skill_Seekers"
-DOC_SCRAPER="$SKILL_SEEKERS_DIR/cli/doc_scraper.py"
-VENV_DIR="$SKILL_SEEKERS_DIR/venv"
-CONFIGS_DIR="$SKILL_SEEKERS_DIR/configs"
-OUTPUT_DIR="$SKILL_SEEKERS_DIR/output"
-CLAUDE_SKILLS_DIR="$HOME/.claude/skills"
+CLAUDE_DIR="$HOME/.claude"
+DOC_SCRAPER="$CLAUDE_DIR/bin/doc_scraper.py"
+VENV_DIR="$CLAUDE_DIR/venv-skill-create"
+CONFIGS_DIR="$CLAUDE_DIR/skill-configs"
+OUTPUT_DIR="$CLAUDE_DIR/skill-output"
+CLAUDE_SKILLS_DIR="$CLAUDE_DIR/skills"
+REQUIREMENTS_FILE="$CLAUDE_DIR/requirements-skill-create.txt"
 
 # Colors
 RED='\033[0;31m'
@@ -27,40 +28,40 @@ print_header() {
 }
 
 check_dependencies() {
-    # Check if Skill_Seekers exists
-    if [ ! -d "$SKILL_SEEKERS_DIR" ]; then
-        echo -e "${RED}✗ Skill_Seekers not found at $SKILL_SEEKERS_DIR${NC}"
+    # Check if doc_scraper exists
+    if [ ! -f "$DOC_SCRAPER" ]; then
+        echo -e "${RED}✗ doc_scraper.py not found at $DOC_SCRAPER${NC}"
         echo ""
-        echo "Clone Skill_Seekers:"
-        echo "  git clone https://github.com/USER/Skill_Seekers.git ~/Skill_Seekers"
-        echo "  cd ~/Skill_Seekers"
-        echo "  python3 -m venv venv"
-        echo "  source venv/bin/activate"
-        echo "  pip install -r requirements.txt"
+        echo "The skill-create Python script is missing."
+        echo "Reinstall ~/.claude or contact support."
         exit 1
     fi
+
+    # Check if Python 3 is available
+    if ! command -v python3 >/dev/null 2>&1; then
+        echo -e "${RED}✗ Python 3 is required but not installed${NC}"
+        exit 1
+    fi
+
+    # Create directories
+    mkdir -p "$CONFIGS_DIR"
+    mkdir -p "$OUTPUT_DIR"
+    mkdir -p "$CLAUDE_SKILLS_DIR"
 
     # Check if venv exists
     if [ ! -d "$VENV_DIR" ]; then
         echo -e "${YELLOW}⚠ Virtual environment not found${NC}"
         echo ""
         echo "Creating virtual environment..."
-        cd "$SKILL_SEEKERS_DIR"
-        python3 -m venv venv
-        source venv/bin/activate
+        python3 -m venv "$VENV_DIR"
 
-        if [ -f "requirements.txt" ]; then
-            echo "Installing dependencies..."
-            pip install -r requirements.txt
-        fi
+        echo "Installing dependencies..."
+        source "$VENV_DIR/bin/activate"
+        pip install --quiet --upgrade pip
+        pip install --quiet -r "$REQUIREMENTS_FILE"
 
         echo -e "${GREEN}✓ Virtual environment created${NC}"
-    fi
-
-    # Check if doc_scraper exists
-    if [ ! -f "$DOC_SCRAPER" ]; then
-        echo -e "${RED}✗ doc_scraper.py not found${NC}"
-        exit 1
+        echo ""
     fi
 }
 
@@ -142,8 +143,6 @@ create_skill() {
     echo -e "${BLUE}Scraping documentation...${NC}"
     echo -e "${YELLOW}This may take a while depending on the site size...${NC}"
     echo ""
-
-    cd "$SKILL_SEEKERS_DIR"
 
     if python3 "$DOC_SCRAPER" --config "$config_file"; then
         echo ""
@@ -276,7 +275,7 @@ case "${1:-help}" in
         echo "  skill-create create vue https://vuejs.org/guide/"
         echo ""
         echo "Output:"
-        echo "  Skills: ~/Skill_Seekers/output/<name>/"
+        echo "  Skills: ~/.claude/skill-output/<name>/"
         echo "  Claude: ~/.claude/skills/<name>/"
         ;;
 

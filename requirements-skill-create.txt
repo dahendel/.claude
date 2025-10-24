@@ -1,0 +1,5 @@
+# Requirements for skill-create command
+# Install with: pip install -r requirements-skill-create.txt
+
+requests>=2.31.0
+beautifulsoup4>=4.12.0
