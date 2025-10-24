@@ -1064,9 +1064,14 @@ def main():
 
     if exists and not args.skip_scrape:
         print(f"\n✓ Found existing data: {page_count} pages")
-        response = input("Use existing data? (y/n): ").strip().lower()
-        if response == 'y':
-            args.skip_scrape = True
+        try:
+            response = input("Use existing data? (y/n): ").strip().lower()
+            if response == 'y':
+                args.skip_scrape = True
+        except EOFError:
+            # Non-interactive mode - default to 'n' (re-scrape)
+            print("Non-interactive mode detected - will re-scrape")
+            pass
 
     # Create converter
     converter = DocToSkillConverter(config, resume=args.resume)
