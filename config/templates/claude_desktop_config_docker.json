@@ -1,0 +1,20 @@
+{
+  "mcpServers": {
+    "chroma": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-chroma",
+        "http://localhost:8000"
+      ]
+    },
+    "filesystem": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "/home/dahendel"
+      ]
+    }
+  }
+}

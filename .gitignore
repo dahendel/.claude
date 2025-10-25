@@ -54,9 +54,10 @@ session-env/
 ollama-data/
 qdrant-data/
 
-# MCP server configs (may contain tokens)
-claude_desktop_config.template.json
-claude_desktop_config_docker.json
+# Keep organized structure clean
+chroma-data/
+backups/
+output/
 
 # Local machine-specific configs
 CLAUDE.local.md

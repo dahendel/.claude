@@ -1,57 +1,70 @@
 version: '3.8'
 
 services:
+  # Chroma Vector Database (Primary - Recommended)
   chroma:
-    image: ghcr.io/chroma-core/chroma:latest
+    image: chromadb/chroma:latest
     container_name: claude-chroma
-    restart: unless-stopped
     ports:
       - "8000:8000"
     volumes:
-      - ${HOME}/.claude/data/chroma-data:/chroma/chroma
+      - ./chroma-data:/chroma/chroma
     environment:
       - IS_PERSISTENT=TRUE
       - ANONYMIZED_TELEMETRY=FALSE
-      - ALLOW_RESET=TRUE
+    restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/heartbeat"]
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 40s
-    networks:
-      - claude-network
+      start_period: 10s
 
-  # Optional: Qdrant (high-performance alternative)
-  # Uncomment to use Qdrant instead of Chroma
-  # qdrant:
-  #   image: qdrant/qdrant:latest
-  #   container_name: claude-qdrant
-  #   restart: unless-stopped
-  #   ports:
-  #     - "6333:6333"
-  #     - "6334:6334"
-  #   volumes:
-  #     - ${HOME}/.claude/qdrant-data:/qdrant/storage
-  #   environment:
-  #     - QDRANT__TELEMETRY_DISABLED=true
-  #   networks:
-  #     - claude-network
+  # Qdrant (Optional - High Performance Alternative)
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: claude-qdrant
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    volumes:
+      - ./qdrant-data:/qdrant/storage
+    environment:
+      - QDRANT__SERVICE__GRPC_PORT=6334
+    restart: unless-stopped
+    profiles:
+      - optional
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:6333/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
-  # Optional: Ollama for local embeddings (zero API cost)
-  # Uncomment to run embeddings locally
-  # ollama:
-  #   image: ollama/ollama:latest
-  #   container_name: claude-ollama
-  #   restart: unless-stopped
-  #   ports:
-  #     - "11434:11434"
-  #   volumes:
-  #     - ${HOME}/.claude/ollama-data:/root/.ollama
-  #   networks:
-  #     - claude-network
+  # Ollama (Optional - Local Embeddings)
+  ollama:
+    image: ollama/ollama:latest
+    container_name: claude-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ./ollama-data:/root/.ollama
+    restart: unless-stopped
+    profiles:
+      - optional
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:11434/api/tags"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  chroma-data:
+    driver: local
+  qdrant-data:
+    driver: local
+  ollama-data:
+    driver: local
 
 networks:
-  claude-network:
-    driver: bridge
+  default:
     name: claude-network

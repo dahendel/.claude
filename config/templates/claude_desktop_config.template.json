@@ -1,0 +1,27 @@
+{
+  "mcpServers": {
+    "chroma": {
+      "command": "uvx",
+      "args": [
+        "chroma-mcp",
+        "--client-type",
+        "persistent",
+        "--data-dir",
+        "/home/dahendel/.claude/chroma-data"
+      ]
+    },
+    "openmemory": {
+      "command": "uvx",
+      "args": [
+        "openmemory"
+      ]
+    },
+    "filesystem": {
+      "command": "uvx",
+      "args": [
+        "mcp-server-filesystem",
+        "/home/dahendel"
+      ]
+    }
+  }
+}
